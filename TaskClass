@@ -1,0 +1,74 @@
+class animal:
+    eat = False
+    resource = False# общий ресурс - молоко, яйца, шерсть
+
+    def feed(self):
+        self.eat = True
+
+    def __init__(self, name, weight):
+        self.name = name
+        self.weight = weight
+
+    def collection(self):# сбор общего ресурса
+        self.resource = True
+
+class goose(animal):
+    voice = 'га-га-га'
+    def get_egg(self):
+        self.egg = 'яйца собраны' #вывод строки для наглядности вместо булевого значения
+        # self.egg = True
+
+class cow(animal):
+    voice = 'му'
+    def milk(self):
+        self.milk = True
+
+class goat(animal):
+    voice = 'меее'
+    def milk(self):
+        self.milk = True
+
+class sheep(animal):
+    voice = 'меее'
+    def cut(self):
+        self.cut = True
+# в задании №3 написано что должнобыть для всех животных по классу
+class chicken(animal):
+    voice = 'коо-коо-кооо'
+    def get_egg(self):
+        self.egg = True
+
+class duck(animal):
+    voice = 'кря'
+    def get_egg(self):
+        self.egg = True
+
+goose_1 = goose('Серый', 5)
+goose_2 = goose('Белый', 6)
+cow = cow('Манька', 400)
+sheep_1 = sheep('Барашек', 120)
+sheep_2 = sheep('Кудрявый', 100)
+chicken_1 = goose('Ко-Ко', 2)
+chicken_2 = goose('Кукареку', 4)
+goat_1 = goat('Рога', 40)
+goat_2 = goat('Копыта', 50)
+duck = goose('Кряква', 3)
+# так как класс курицы и утки наследуется от гуся, меняем голос
+chicken_1.voice = 'коо-коо-кооо'
+chicken_2.voice = 'коо-коо-кооо'
+duck.voice = 'кря'
+#всех доим кормим собираем яйца, шерсть. И взвешиваем. Находим самого тяжелого.
+list_animals = [goose_1, goose_2, cow, sheep_1, sheep_2, chicken_1, chicken_2, goat_1, goat_2,duck ]
+sum = 0
+big = 0
+big_name = str
+for animal in list_animals:
+    animal.collection()
+    animal.feed()
+    sum = sum + animal.weight
+    if big < animal.weight:
+        big = animal.weight
+        big_name = animal.name
+
+
+print('Общий вес: {}, самого тяжелого зовут: {}'. format(sum, big_name))
