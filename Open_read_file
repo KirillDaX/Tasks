@@ -1,0 +1,28 @@
+name_of_recipe = str
+items_in_recipe = 0
+product = {}
+product_list = []
+product_dict = {}
+cook_book = {}
+product_dict_list = []
+
+
+with open('recipes.txt',encoding='utf8') as f:
+    for line in f:#читаем построчно файл
+        name_of_recipe = line.strip()#читаем первую строчку название рецепта
+        items_in_recipe = f.readline()# читаем кол-во предметов в рецепте
+        cook_book[name_of_recipe] = name_of_recipe# присваиваем в словре ключ с названием рецепта
+        i = 0
+        # print(f'имя {name_of_recipe}, количество {items_in_recipe}')
+        while i != int(items_in_recipe):# в зависимости от кол-ва ингридиентов, считываем нужно количество строк
+            product = f.readline()
+            product_list = product.replace('\n','').split('|')# убираем лишнее
+            product_dict = {'ingridient_name': product_list[0], 'quantity': product_list[1], 'measure': product_list[2]}
+            # print(f'продукт {product_dict}')
+            product_dict_list.append(product_dict)
+            i += 1
+        # print(f'название реца {name_of_recipe}, рецепт {product_dict_list}')
+        cook_book[name_of_recipe] = product_dict_list
+        # print(cook_book[name_of_recipe])
+        product_dict_list.clear()
+        f.readline()
