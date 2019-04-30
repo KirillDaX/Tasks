@@ -1,0 +1,47 @@
+import datetime
+from contextlib import contextmanager
+
+@contextmanager
+def file_open(path):
+    try:
+        file = open(path, encoding='utf8')
+        create_time = datetime.datetime.now()
+        yield file
+    finally:
+        file.close()
+        end_time = datetime.datetime.now()
+        print(f'время начала: {create_time}')
+        print(f'время конца: {end_time}')
+        print(f'время работы: {end_time - create_time}')
+
+
+name_of_recipe = str
+items_in_recipe = 0
+product = {}
+product_list = []
+product_dict = {}
+cook_book = {}
+product_dict_list = []
+
+
+if __name__ == '__main__':
+    with file_open('recipes2.txt') as file:
+        for line in file: 
+            name_of_recipe = line.strip()  
+            items_in_recipe = file.readline()  
+            cook_book[name_of_recipe] = name_of_recipe  # присваиваем в словре ключ с названием рецепта
+            i = 0
+            # print(f'имя {name_of_recipe}, количество {items_in_recipe}')
+            while i != int(items_in_recipe):  
+                product = file.readline()
+                product_list = product.replace('\n', '').split('|')  # убираем лишнее
+                product_dict = {'ingridient_name': product_list[0], 'quantity': product_list[1],
+                                'measure': product_list[2]}
+                # print(f'продукт {product_dict}')
+                product_dict_list.append(product_dict)
+                i += 1
+            # print(f'название реца {name_of_recipe}, рецепт {product_dict_list}')
+            cook_book[name_of_recipe] = product_dict_list
+            # print(cook_book[name_of_recipe])
+            product_dict_list.clear()
+            file.readline()
