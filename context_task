@@ -1,21 +1,26 @@
 import datetime
 from contextlib import contextmanager
 
-create_time = datetime.datetime.now()
 @contextmanager
 def file_open(path):
     try:
         file = open(path, 'w')
+        create_time = datetime.datetime.now()
         yield file
     finally:
         file.close()
+        end_time = datetime.datetime.now()
+        print(f'время начала: {create_time}')
+        print(f'время конца: {end_time}')
+        print(f'время работы: {end_time - create_time}')
 
 
+# чтоб хоть какая-то разница была по времени.
 if __name__ == '__main__':
     with file_open('testfile.txt') as file:
-        towrite = 1200 ** 3000 - 1199 ** 2999 
+        towrite = 1200 ** 3000 - 1199 ** 2999
         file.write(f'{towrite}')
-        end_time = datetime.datetime.now()
-        print(f'время начала: {create_time}\n'
-              f'время конца: {end_time}\n'
-              f'время работы: {end_time - create_time}')
+        # end_time = datetime.datetime.now()
+        # print(f'время начала: {create_time}\n'
+        #       f'время конца: {end_time}\n'
+        #       f'время работы: {end_time - create_time}')
