@@ -1,26 +1,12 @@
-# я использовал другой ключ, этот достиг лимита.
+# я использовал другой ключ, этот достиг лимита перевода текста и не работает.
 
-import requests
 
-API_KEY = 'trnsl.1.1.20161025T233221Z.47834a66fd7895d0.a95fd4bfde5c1794fa433453956bd261eae80152'
+# API_KEY = 'trnsl.1.1.20161025T233221Z.47834a66fd7895d0.a95fd4bfde5c1794fa433453956bd261eae80152'
 
 URL = 'https://translate.yandex.net/api/v1.5/tr.json/translate'
 
 
-def translate_it(path_to_file, output_file, from_lang):
-    """
-    https://translate.yandex.net/api/v1.5/tr.json/translate ?
-    key=<API-ключ>
-     & text=<переводимый текст>
-     & lang=<направление перевода>
-     & [format=<формат текста>]
-     & [options=<опции перевода>]
-     & [callback=<имя callback-функции>]
-    :param text:
-    :param to_lang:
-    :return:
-    """
-    text = str
+def translate_it(path_to_file, output_file, from_lang, to_lang):
     full_text = ''
 
     with open(path_to_file) as f:
@@ -29,11 +15,10 @@ def translate_it(path_to_file, output_file, from_lang):
             f.readline()
             full_text = str(full_text) + text
 
-
     params = {
         'key': API_KEY,
         'text': full_text,
-        'lang': '{}-ru'.format(from_lang)
+        'lang': '{}-{}'.format(from_lang, to_lang)
     }
 
     response = requests.get(URL, params=params)
@@ -46,7 +31,6 @@ def translate_it(path_to_file, output_file, from_lang):
     return ''.join(json_['text'])
 
 
-
-# translate_it('DE.txt', 'output_trans_de.txt', 'de')
-# translate_it('es.txt', 'output_trans_es.txt', 'es')
-translate_it('fr.txt', 'output_trans_fr.txt', 'fr')
+# translate_it('DE.txt', 'output_trans_de.txt', 'de', 'ru')
+# translate_it('es.txt', 'output_trans_es.txt', 'es', 'ru')
+translate_it('fr.txt', 'output_trans_fr.txt', 'fr', 'ru')
