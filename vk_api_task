@@ -72,7 +72,7 @@ class User:
 
 
     def __and__(self, other):
-        self.comp = user1.get_overall_friends(vk_id2)
+        self.comp = user1.get_overall_friends(vk_id2)['response']
         return self.comp
 
     def __str__(self):
@@ -87,7 +87,7 @@ user2 = User(TOKEN, vk_id2)
 print(user1 & user2)
 
 # общие друзья
-print('Общие друзья:', user1.get_overall_friends(vk_id2))
+print('Общие друзья:', user1.get_overall_friends(vk_id2)['response'])
 
 #Вывод print(user) должен выводить ссылку на профиль пользователя в сети VK
 print(user1)
