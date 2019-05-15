@@ -1,3 +1,5 @@
+#свои vk_id  и токен удалил, с которыми делал.
+
 
 from pprint import pprint
 import requests
@@ -16,6 +18,7 @@ auth_data = {
 
 vk_id1 = 
 vk_id2 = 
+
 TOKEN = 'ваш токен'
 
 params = {
@@ -55,7 +58,7 @@ class User:
         # params['count'] =
         # params['fields'] =
         response = requests.get('https://api.vk.com/method/friends.get', params)
-        pprint(response.json())
+        # pprint(response.json())
         return response.json()
 
     def get_overall_friends(self, target_id):
@@ -64,14 +67,14 @@ class User:
         params['target_uid'] = target_id
         response = requests.get('https://api.vk.com/method/friends.getMutual', params)
         # self.count = len(response.json()['response'])
-        pprint(response.json())
+        # print(response.json()['response'])
         return response.json()
 
-# не осмыслил как переписать and, не понимаю как он работает  и что в него пихать
-    # def __and__(self, other):
-    #     = self.get_friends_list
-    #     return 
-    
+
+    def __and__(self, other):
+        self.comp = user1.get_overall_friends(vk_id2)
+        return self.comp
+
     def __str__(self):
         self.user = ('https://vk.com/id{}'.format(self.id_vk))
         return self.user
@@ -80,8 +83,11 @@ class User:
 user1 = User(TOKEN, vk_id1)
 user2 = User(TOKEN, vk_id2)
 
+
+print(user1 & user2)
+
 # общие друзья
-user1.get_overall_friends(vk_id2)
+print('Общие друзья:', user1.get_overall_friends(vk_id2))
 
 #Вывод print(user) должен выводить ссылку на профиль пользователя в сети VK
 print(user1)
