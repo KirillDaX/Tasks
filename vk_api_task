@@ -1,0 +1,87 @@
+
+from pprint import pprint
+import requests
+
+APP_ID = 6984843
+BASE_URL = 'https://oauth.vk.com/authorize'
+auth_data = {
+    'client_id': APP_ID,
+    'display': 'page',
+    'response_type': 'token',
+    'scope': 'friends',
+    'v': '5.95',
+}
+
+# print('?'.join((BASE_URL, urlencode(auth_data))))
+
+vk_id1 = 
+vk_id2 = 
+TOKEN = 'ваш токен'
+
+params = {
+    'access_token': TOKEN,
+    'v': '5.95'
+}
+
+
+class User:
+    def __init__(self, token, id_vk_user=None):
+        self.token = token
+        self.id_vk = id_vk_user
+
+    def get_params(self):
+        return dict(access_token=self.token, v='5.95')
+
+    def get_info(self):
+        params = self.get_params()
+        params['user_ids'] = self.id_vk
+        response = requests.get('https://api.vk.com/method/users.get', params)
+        # pprint(response.json())
+        self.id = response.json()['response'][0]['id']
+        return response.json()
+
+    def get_friend(self, id_friend):
+        params = self.get_params()
+        params['user_ids'] = id_friend
+        params['need_sign'] = 0
+        response = requests.get('https://api.vk.com/method/friends.areFriends', params)
+        pprint(response.json())
+        return response.json()
+
+    def get_friends_list(self, id_target):
+        params = self.get_params()
+        params['user_id'] = id_target
+        params['order'] = 'hints'
+        # params['count'] =
+        # params['fields'] =
+        response = requests.get('https://api.vk.com/method/friends.get', params)
+        pprint(response.json())
+        return response.json()
+
+    def get_overall_friends(self, target_id):
+        params = self.get_params()
+        params['source_uid'] = vk_id1
+        params['target_uid'] = target_id
+        response = requests.get('https://api.vk.com/method/friends.getMutual', params)
+        # self.count = len(response.json()['response'])
+        pprint(response.json())
+        return response.json()
+
+# не осмыслил как переписать and, не понимаю как он работает  и что в него пихать
+    # def __and__(self, other):
+    #     = self.get_friends_list
+    #     return 
+    
+    def __str__(self):
+        self.user = ('https://vk.com/id{}'.format(self.id_vk))
+        return self.user
+
+
+user1 = User(TOKEN, vk_id1)
+user2 = User(TOKEN, vk_id2)
+
+# общие друзья
+user1.get_overall_friends(vk_id2)
+
+#Вывод print(user) должен выводить ссылку на профиль пользователя в сети VK
+print(user1)
