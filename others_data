@@ -1,0 +1,44 @@
+import json
+from pprint import pprint
+
+data_rss = {}
+i = 0
+
+word_list = []
+
+with open('newsafr.json', encoding='utf-8') as datafile:
+    json_data = json.load(datafile)
+    data_rss = json_data['rss']
+
+while i != len(data_rss['channel']['items']):
+    # pprint(data_rss['channel']['items'][i]['description'])
+    for word in data_rss['channel']['items'][i]['description'].split(' '):
+        word.lower()
+        if len(word) > 6:
+            word_list.append(word)
+    i += 1
+
+
+def get_sort(string_list, top):
+    seen = {}
+    k = 0
+
+    for find_word in string_list:
+        if find_word not in seen:
+            seen[find_word] = 1
+        else:
+            seen[find_word] += 1
+
+    dcit_sort = sorted(seen.items(), key=lambda kv: kv[1])
+    dcit_sort.reverse()
+    for i_sort in dcit_sort:
+        if k < top:
+            print(i_sort[0], '-', i_sort[1], 'раз ввстречается')
+            k += 1
+        else:
+            break
+
+    return dcit_sort
+
+
+get_sort(word_list, 10)
