@@ -13,9 +13,8 @@ with open('newsafr.json', encoding='utf-8') as datafile:
 while i != len(data_rss['channel']['items']):
     # pprint(data_rss['channel']['items'][i]['description'])
     for word in data_rss['channel']['items'][i]['description'].split(' '):
-        word.lower()
         if len(word) > 6:
-            word_list.append(word)
+            word_list.append(word.lower())
     i += 1
 
 
@@ -39,6 +38,5 @@ def get_sort(string_list, top):
             break
 
     return dcit_sort
-
 
 get_sort(word_list, 10)
