@@ -13,39 +13,44 @@ auth_data = {
     'v': '5.95',
 }
 
-vk_id1 = '171691064'  # 171691064 eshmargunov
+person_vk = input('введите имя пользователя VK или его id: ')
+# person_vk = '171691064'
+# person_vk = 'eshmargunov'
 
-TOKEN = ''  # из задания
+# TOKEN = ''  # из задания
+TOKEN = input('введите токен: ')
 
 params = {
     'access_token': TOKEN,
     'v': '5.95'
 }
 
+collect_group = []
+
 
 class User:
-    def __init__(self, token, id_vk_user=None):
+    def __init__(self, token):
         self.token = token
-        self.id_vk = id_vk_user
 
     def get_params(self):
         return dict(access_token=self.token, v='5.95')
+
+    def users_get(self, person):
+        params = self.get_params()
+        response = requests.get('https://api.vk.com/method/users.get', params)
+        # pprint(response.json()['response'][0]['id'])
+        return response.json()['response'][0]['id']
 
     def get_friends_list(self, id_target):
         params = self.get_params()
         params['user_id'] = id_target
         params['order'] = 'hints'
-        # params['count'] =
-        # params['fields'] =
         response = requests.get('https://api.vk.com/method/friends.get', params)
         # pprint(response.json())
         return response.json()
 
     def get_groups(self, user_id):
         params['user_id'] = user_id
-        params['extended'] = '1'
-        params['fields'] = 'id,name,members_count'
-        
         response = requests.get('https://api.vk.com/method/groups.get', params)
         # pprint(response.json())
         return response.json()
@@ -54,67 +59,86 @@ class User:
         params['user_id'] = user_id
         params['extended'] = '1'
         params['fields'] = 'id,name,members_count'
-        # user_id = vk_id1
         response = requests.get('https://api.vk.com/method/groups.get', params)
         # pprint(response.json())
         return response.json()
 
 
-user1 = User(TOKEN, vk_id1)
-
+user1 = User(TOKEN)
+vk_id1 = user1.users_get(person_vk)
 friends_target = user1.get_friends_list(vk_id1)['response']['items']  # получаем список id друзей таргета
 groups_target = user1.get_groups(vk_id1)['response']['items']  # получаем список груп таргета
-# print(len(friends_target))
-# print(groups_target)
-# =======
-collect_group = []
 
 
-def collector():  # проход по всем друзьям и сбор групп + исключение друзей у которых нет доступа к группам
+def collector():
+    """
+    проходbn по всем друзьям и сборирает список групп в которых они сосотоят
+    исключение друзей у которых нет доступа к группам
+    :return: collect_group
+    """
     counter_of_steps = 1
     for groups_of_freinds in friends_target:
         try:
             collect_group.append(user1.get_groups(groups_of_freinds)['response']['items'])
             print('- друг № {} из {}'.format(counter_of_steps, len(friends_target)))
-            counter_of_steps += 1
             time.sleep(0.5)
         except KeyError:
-            counter_of_steps += 1
             print('ошибка доступа к другу № {} из {}'.format(counter_of_steps, len(friends_target)))
+        counter_of_steps += 1
+    # pprint('collect_group = {}'.format(collect_group))
     return collect_group  # возвращает слепленный список групп всех друзей
 
 
+def dict_for_json():
+    """
+    получает список групп целевого пользователя с полями через  get_groups_fields
+    переводит его в нужную по заданию форму вывода
+    :return: form_list
+    """
+    groups_target_fields = user1.get_groups_fields(vk_id1)  # получение данных групп с полями
+    num_g = 0
+    dict_fields = {}
+    form_list = []
+    bufer = {}
+    # pprint(groups_target_fields)
+    while num_g < int(groups_target_fields['response']['count']):
+        dict_fields['name'] = groups_target_fields['response']['items'][num_g]['name']
+        dict_fields['gid'] = groups_target_fields['response']['items'][num_g]['id']
+        dict_fields['members_count'] = groups_target_fields['response']['items'][num_g]['members_count']
+        # print(dict_fields)
+        bufer = dict_fields.copy()
+        form_list.append(bufer)
+        num_g += 1
+    # pprint('form_list = {}'.format(form_list))
+    return form_list  # возвращаем список словарей с полями
+
+
+def matches():
+    """
+    находит уникальные элементы между groups_target и collect_group
+    :return: unic_groupes
+    """
+    full_list = []
+    for new_collect in collect_group:
+        for line_collect in new_collect:
+            full_list.append(line_collect)
+    full_list_set = set(full_list)
+    groups_target_set = set(groups_target)
+    unic_groupes = groups_target_set.difference(full_list_set)
+    # print('unic_groupes = ', unic_groupes)
+    return unic_groupes
+
+
+def write_in_file():
+    print_list = []
+    with open("groups.json", 'w', encoding='utf-8') as write_file:
+        for item in prin_form:
+            if item['gid'] in unic_groupes:
+                print_list.append(item)
+        json.dump(print_list, write_file, indent=4, ensure_ascii=False)
+
+
 collector()
-# pprint(collect_group)
-
-for unic in groups_target:  # чистим список от не уникальных групп
-    if unic in collect_group:
-        groups_target.remove(unic)
-# print(groups_target)
-
-groups_target_fields = user1.get_groups_fields(vk_id1)
-num_g = 0
-dict_fields = {}
-form_list = []
-bufer = {}
-# pprint(groups_target_fields)
-
-while num_g < int(groups_target_fields['response']['count']):
-    dict_fields['name'] = groups_target_fields['response']['items'][num_g]['name']
-    dict_fields['gid'] = groups_target_fields['response']['items'][num_g]['id']
-    dict_fields['members_count'] = groups_target_fields['response']['items'][num_g]['members_count']
-    # print(dict_fields)
-    # была странная проблема, без буфера, лист заполнялся одинаковыми значениями и перезаписывался
-    #  т.е. на 3 ем шаге в нем было 3 одинаковых словаря из 3его шага, на последнем все словари с последнего
-    bufer = dict_fields.copy()
-    form_list.append(bufer)
-    num_g += 1
-    # print(form_list)
-pprint(form_list)
-for item_in in form_list:
-    if item_in['gid'] not in groups_target:
-        form_list.remove(item_in)
-
-# пишем dict_fields  в groups.json
-with open("groups.json", 'w', encoding='utf-8') as write_file:
-    json.dump(form_list, write_file, indent=4, ensure_ascii=False)
+unic_groupes = matches()
+prin_form = dict_for_json()
+write_in_file()
