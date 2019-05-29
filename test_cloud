@@ -1,0 +1,157 @@
+import time
+import datetime
+from pprint import pprint
+import requests
+import json
+
+create_time = datetime.datetime.now()
+APP_ID = 6984843
+BASE_URL = 'https://oauth.vk.com/authorize'
+auth_data = {
+    'client_id': APP_ID,
+    'display': 'page',
+    'response_type': 'token',
+    'scope': 'friends',
+    'v': '5.95',
+}
+
+person_vk = input('введите имя пользователя VK или его id: ')
+# person_vk = '171691064'
+# person_vk = 'eshmargunov'
+
+# TOKEN = ''  # из задания
+TOKEN = input('введите токен: ')
+
+params = {
+    'access_token': TOKEN,
+    'v': '5.95'
+}
+
+collect_group = []
+
+
+class User:
+    def __init__(self, token):
+        self.token = token
+
+    def get_params(self):
+        return dict(access_token=self.token, v='5.95')
+
+    def users_get(self, person):
+        params = self.get_params()
+        response = requests.get('https://api.vk.com/method/users.get', params)
+        # pprint(response.json()['response'][0]['id'])
+        return response.json()['response'][0]['id']
+
+    def get_friends_list(self, id_target):
+        params = self.get_params()
+        params['user_id'] = id_target
+        params['order'] = 'hints'
+        response = requests.get('https://api.vk.com/method/friends.get', params)
+        # pprint(response.json())
+        return response.json()
+
+    def get_groups(self, user_id):
+        params['user_id'] = user_id
+        # print(response.json())
+        repeat = True
+        while repeat:
+            response = requests.get('https://api.vk.com/method/groups.get', params)
+            from_jason = response.json()
+            if 'error' in from_jason and 'error_code' in from_jason['error'] and from_jason['error']['error_code'] == 6:
+                print('--- error_code: 6  ---')
+                time.sleep(2)
+            else:
+                repeat = False
+        return from_jason
+
+    def get_groups_fields(self, user_id):
+        params['user_id'] = user_id
+        params['extended'] = '1'
+        params['fields'] = 'id,name,members_count'
+        response = requests.get('https://api.vk.com/method/groups.get', params)
+        # pprint(response.json())
+        return response.json()
+
+
+user1 = User(TOKEN)
+vk_id1 = user1.users_get(person_vk)
+friends_target = user1.get_friends_list(vk_id1)['response']['items']  # получаем список id друзей таргета
+groups_target = user1.get_groups(vk_id1)['response']['items']  # получаем список груп таргета
+
+
+def collector():
+    """
+    проходbn по всем друзьям и сборирает список групп в которых они сосотоят
+    исключение друзей у которых нет доступа к группам
+    :return: collect_group
+    """
+    counter_of_steps = 1
+    for groups_of_freinds in friends_target:
+        try:
+            collect_group.append(user1.get_groups(groups_of_freinds)['response']['items'])
+            print('- друг № {} из {}'.format(counter_of_steps, len(friends_target)))
+            # time.sleep(0.5)
+        except KeyError:
+            print('ошибка доступа к другу № {} из {}'.format(counter_of_steps, len(friends_target)))
+        counter_of_steps += 1
+    # pprint('collect_group = {}'.format(collect_group))
+    return collect_group  # возвращает слепленный список групп всех друзей
+
+
+def dict_for_json():
+    """
+    получает список групп целевого пользователя с полями через  get_groups_fields
+    переводит его в нужную по заданию форму вывода
+    :return: form_list
+    """
+    groups_target_fields = user1.get_groups_fields(vk_id1)  # получение данных групп с полями
+    num_g = 0
+    dict_fields = {}
+    form_list = []
+    bufer = {}
+    # pprint(groups_target_fields)
+    while num_g < int(groups_target_fields['response']['count']):
+        dict_fields['name'] = groups_target_fields['response']['items'][num_g]['name']
+        dict_fields['gid'] = groups_target_fields['response']['items'][num_g]['id']
+        dict_fields['members_count'] = groups_target_fields['response']['items'][num_g]['members_count']
+        # print(dict_fields)
+        bufer = dict_fields.copy()
+        form_list.append(bufer)
+        num_g += 1
+    # pprint('form_list = {}'.format(form_list))
+    return form_list  # возвращаем список словарей с полями
+
+
+def matches():
+    """
+    находит уникальные элементы между groups_target и collect_group
+    :return: unic_groupes
+    """
+    full_list = []
+    for new_collect in collect_group:
+        for line_collect in new_collect:
+            full_list.append(line_collect)
+    full_list_set = set(full_list)
+    groups_target_set = set(groups_target)
+    unic_groupes = groups_target_set.difference(full_list_set)
+    # print('unic_groupes = ', unic_groupes)
+    return unic_groupes
+
+
+def write_in_file():
+    print_list = []
+    with open("groups.json", 'w', encoding='utf-8') as write_file:
+        for item in prin_form:
+            if item['gid'] in unic_groupes:
+                print_list.append(item)
+        json.dump(print_list, write_file, indent=4, ensure_ascii=False)
+
+
+collector()
+unic_groupes = matches()
+prin_form = dict_for_json()
+write_in_file()
+end_time = datetime.datetime.now()
+print(f'время работы: {end_time - create_time}')
+
